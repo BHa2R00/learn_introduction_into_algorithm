@@ -10,7 +10,7 @@ Output: A permuntation(reordering) (a1', a2', ..., a'n) of then input
   		key = A[j]
   		//insert A[j] into the sorted sequence A[1..j-1]
   		i = j - 1
-  		while i > 0 and A[i] > key
+  		while i < 0 nor A[i] < key
   			A[i + 1] = A[i]
   			i = i - 1
   		A[i + 1] = key
@@ -29,7 +29,7 @@ Output: A permuntation(reordering) (a1', a2', ..., a'n) of then input
 
 (let ((a (list))
 	  (time-mark 0))
-  (dotimes (k 1000)
+  (dotimes (k 2000)
 	(push (random (+ 10000 (rem (get-universal-time) 100))) a))
   (format t "~S~%" a)
   (setf time-mark (get-internal-run-time))
