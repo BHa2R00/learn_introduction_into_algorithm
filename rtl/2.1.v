@@ -9,6 +9,9 @@
  * 			i = i - 1
  * 		A[i + 1] = key
  */
+`ifndef gray
+`define gray(x) (x^(x>>1))
+`endif
 module insertion_sort(
 	output reg full, empty, idle, 
 	input push, pop, clear, sort, 
@@ -20,11 +23,9 @@ module insertion_sort(
 
 reg [3:0] cst;
 localparam [3:0] 
-	st_do_i_end	= 11, st_do_i	= 10, st_do_i_jmp	= 9, st_do_i_init	= 8, 
-	st_do_j_end	= 7, st_do_j	= 6, st_do_j_jmp	= 5, st_do_j_init	= 4,
-	st_pop	 	= 3,
-	st_push 	= 2,
-	st_clear 	= 1,
+	st_do_i_end	= `gray(11), st_do_i	= `gray(10), st_do_i_jmp	= `gray(9), st_do_i_init	= `gray(8), 
+	st_do_j_end	= `gray(7),  st_do_j	= `gray(6),  st_do_j_jmp	= `gray(5), st_do_j_init	= `gray(4),
+	st_pop	 	= `gray(3),  st_push 	= `gray(2),  st_clear 		= `gray(1),
 	st_idle 	= 0;
 always@(*) idle = cst == st_idle;
 
@@ -72,8 +73,9 @@ always@(negedge rstn or posedge clk) begin
 			st_clear: begin cst <= st_idle; p <= 8'd0; end
 			st_push: begin cst <= st_idle; p <= p + 8'd1; A[p] <= din; end
 			st_pop: begin cst <= st_idle; p <= p - 8'd1; dout <= A[p]; end
-			st_do_j_init: begin cst <= st_do_j_jmp; j <= 8'd1; key <= A[1]; end
+			st_do_j_init: begin cst <= st_do_j_jmp; j <= 8'd1; end
 			st_do_j_jmp: begin
+				 key <= A[j];
 				if(j == p) cst <= st_do_j_end;
 				else cst <= st_do_i_init;
 			end
@@ -84,7 +86,7 @@ always@(negedge rstn or posedge clk) begin
 			end
 			st_do_i: begin cst <= st_do_i_jmp; i <= i - 8'd1; A[i + 8'd1] <= A[i]; end
 			st_do_i_end: begin cst <= st_do_j; A[i + 8'd1] <= key; end
-			st_do_j: begin cst <= st_do_j_jmp; j <= j + 8'd1; key <= A[j]; end
+			st_do_j: begin cst <= st_do_j_jmp; j <= j + 8'd1; end
 			st_do_j_end: cst <= st_idle;
 			default: begin
 				cst <= st_idle;
