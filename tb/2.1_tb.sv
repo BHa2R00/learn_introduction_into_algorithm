@@ -41,6 +41,7 @@ initial begin
 	sort = 1'b0;
 	repeat(2) @(negedge clk); sort = 1'b1;
 	$write("pop\n");
+	@(posedge idle);
 	while(!empty) begin
 		pop = 1'b0;
 		repeat(10) @(negedge clk);
