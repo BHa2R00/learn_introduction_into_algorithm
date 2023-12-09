@@ -1,2 +1,2 @@
 # learn_introduction_to_algorithm
-Personal shitty random implementation of examples in &lt;&lt;Introduction to Algorithm>>
+Personal shitty random implementations of examples in &lt;&lt;Introduction to Algorithm>>
