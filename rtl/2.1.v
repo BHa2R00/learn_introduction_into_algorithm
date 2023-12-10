@@ -34,6 +34,7 @@ reg [7:0] p, j, i;
 always@(*) full = p == 8'd255;
 always@(*) empty = p == 8'd0;
 reg [15:0] key;
+wire [7:0] pop_p = p - 8'd1;
 
 reg [1:0] push_d, pop_d, clear_d, sort_d;
 always@(negedge rstn or posedge clk) begin
@@ -72,7 +73,7 @@ always@(negedge rstn or posedge clk) begin
 			end
 			st_clear: begin cst <= st_idle; p <= 8'd0; end
 			st_push: begin cst <= st_idle; p <= p + 8'd1; A[p] <= din; end
-			st_pop: begin cst <= st_idle; p <= p - 8'd1; dout <= A[p]; end
+			st_pop: begin cst <= st_idle; p <= p - 8'd1; dout <= A[pop_p]; end
 			st_do_j_init: begin cst <= st_do_j_jmp; j <= 8'd1; end
 			st_do_j_jmp: begin
 				 key <= A[j];
@@ -87,7 +88,7 @@ always@(negedge rstn or posedge clk) begin
 			st_do_i: begin cst <= st_do_i_jmp; i <= i - 8'd1; A[i + 8'd1] <= A[i]; end
 			st_do_i_end: begin cst <= st_do_j; A[i + 8'd1] <= key; end
 			st_do_j: begin cst <= st_do_j_jmp; j <= j + 8'd1; end
-			st_do_j_end: cst <= st_idle;
+			st_do_j_end: begin cst <= st_idle; p <= p - 1'd1; end
 			default: begin
 				cst <= st_idle;
 				dout <= dout;
