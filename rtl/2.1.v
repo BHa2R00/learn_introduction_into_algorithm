@@ -51,10 +51,10 @@ always@(negedge rstn or posedge clk) begin
 		sort_d[1] <= sort_d[0]; sort_d[0] <= sort;
 	end
 end
-wire push_01 = push_d == 2'b01;
-wire pop_01 = pop_d == 2'b01;
-wire clear_01 = clear_d == 2'b01;
-wire sort_01 = sort_d == 2'b01;
+wire push_x = ^push_d;
+wire pop_x = ^pop_d;
+wire clear_x = ^clear_d;
+wire sort_x = ^sort_d;
 
 always@(negedge rstn or posedge clk) begin
 	if(!rstn) begin
@@ -66,10 +66,10 @@ always@(negedge rstn or posedge clk) begin
 	else if(enable) begin
 		case(cst)
 			st_idle: begin
-				if(clear_01) cst <= st_clear;
-				else if(push_01) cst <= st_push;
-				else if(pop_01) cst <= st_pop;
-				else if(sort_01) cst <= st_do_j_init;
+				if(clear_x) cst <= st_clear;
+				else if(push_x) cst <= st_push;
+				else if(pop_x) cst <= st_pop;
+				else if(sort_x) cst <= st_do_j_init;
 			end
 			st_clear: begin cst <= st_idle; p <= 8'd0; end
 			st_push: begin cst <= st_idle; p <= p + 8'd1; A[p] <= din; end
