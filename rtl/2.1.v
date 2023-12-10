@@ -9,11 +9,8 @@
  * 			i = i - 1
  * 		A[i + 1] = key
  */
-`ifndef gray
-`define gray(x) (x^(x>>1))
-`endif
 module insertion_sort(
-	output reg full, empty, idle, 
+	output full, empty, idle, 
 	input push, pop, clear, sort, 
 	output reg [15:0] dout, 
 	input [15:0] din, 
@@ -21,18 +18,21 @@ module insertion_sort(
 	input rstn, clk 
 );
 
-reg [3:0] cst;
+`ifndef gray
+`define gray(x) (x^(x>>1))
+`endif
+ reg [3:0] cst;
 localparam [3:0] 
 	st_do_i_end	= `gray(11), st_do_i	= `gray(10), st_do_i_jmp	= `gray(9), st_do_i_init	= `gray(8), 
 	st_do_j_end	= `gray(7),  st_do_j	= `gray(6),  st_do_j_jmp	= `gray(5), st_do_j_init	= `gray(4),
 	st_pop	 	= `gray(3),  st_push 	= `gray(2),  st_clear 		= `gray(1),
 	st_idle 	= 0;
-always@(*) idle = cst == st_idle;
+assign idle = cst == st_idle;
 
 reg [15:0] A[0:255];
 reg [7:0] p, j, i;
-always@(*) full = p == 8'd255;
-always@(*) empty = p == 8'd0;
+assign full = p == 8'd255;
+assign empty = p == 8'd0;
 reg [15:0] key;
 wire [7:0] pop_p = p - 8'd1;
 
