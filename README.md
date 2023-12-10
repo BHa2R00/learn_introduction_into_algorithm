@@ -6,4 +6,4 @@ Personal shitty random implementations of pseudo code examples given in &lt;&lt;
 ![format](https://github.com/BHa2R00/learn_introduction_to_algorithm/blob/main/rtl/20231210140707_611x456_scrot.png)
 ![format](https://github.com/BHa2R00/learn_introduction_to_algorithm/blob/main/tb/20231210140949_1576x445_scrot.png)
 ![format](https://github.com/BHa2R00/learn_introduction_to_algorithm/blob/main/tb/20231210140919_1543x592_scrot.png)
-![format](https://github.com/BHa2R00/learn_introduction_to_algorithm/blob/main/work/20231210133653_686x567_scrot.png)
+![format](https://github.com/BHa2R00/learn_introduction_to_algorithm/blob/main/work/20231210143645_708x542_scrot.png)
