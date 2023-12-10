@@ -1,5 +1,5 @@
 # learn_introduction_to_algorithm
-Personal shitty random implementations of examples in &lt;&lt;Introduction to Algorithm>>
+Personal shitty random implementations of pseudo code examples given in &lt;&lt;Introduction to Algorithm>>
 
 ### 2.1. Insertion sort
 ![format](https://github.com/BHa2R00/learn_introduction_to_algorithm/blob/main/rtl/20231210013147_494x456_scrot.png)
