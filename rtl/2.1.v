@@ -74,7 +74,7 @@ always@(negedge rstn or posedge clk) begin
 			st_clear: begin cst <= st_idle; p <= 8'd0; end
 			st_push: begin cst <= st_idle; p <= p + 8'd1; A[p] <= din; end
 			st_pop: begin cst <= st_idle; p <= p - 8'd1; dout <= A[pop_p]; end
-			st_do_j_init: begin cst <= st_do_j_jmp; j <= 8'd1; end
+			st_do_j_init: begin cst <= st_do_j_jmp; j <= 8'd1; p <= p - 1'd1; end
 			st_do_j_jmp: begin
 				 key <= A[j];
 				if(j == p) cst <= st_do_j_end;
