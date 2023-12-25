@@ -1,25 +1,41 @@
-`timescale 1ns/100ps
-
+//`define ASYNC
 `include "../rtl/2.1.v"
+`timescale 1ns/100ps
 
 module insertion_sort_tb;
 
 reg rstn, enable;
 reg clk;
 initial clk = 1'b0;
-always #4.45 clk = ~clk;
+always #10.416667 clk = ~clk;
+reg dut_clk;
 reg [15:0] din;
 wire [15:0] dout;
 reg push, pop, clear, sort;
 wire full, empty, idle;
+wire [3:0] cst, nst;
+
+`ifdef ASYNC
+wire locale_clock;
+wire [3:0] nst_d;
+initial dut_clk = 0;
+always #10.416667 dut_clk = locale_clock;
+`else 
+always@(*) dut_clk = clk;
+`endif
 
 insertion_sort dut(
+`ifdef ASYNC
+	.locale_clock(locale_clock), 
+	.nst_d(nst_d), 
+`endif
 	.full(full), .empty(empty), .idle(idle), 
+	.cst(cst), .nst(nst),
 	.push(push), .pop(pop), .clear(clear), .sort(sort), 
 	.dout(dout), 
 	.din(din), 
 	.enable(enable), 
-	.rstn(rstn), .clk(clk) 
+	.rstn(rstn), .clk(dut_clk) 
 );
 
 task push_and_pop;
@@ -40,9 +56,11 @@ task push_and_pop;
 		@(posedge idle);
 		while(!empty) begin
 			repeat(10) @(negedge clk);
-			pop = ~pop;
+			if(idle) begin
+				$write("%d ", dout);
+				pop = ~pop;
+			end
 			repeat(2) @(negedge clk);
-			$write("%d ", dout);
 		end
 		$write("\n");
 	end
