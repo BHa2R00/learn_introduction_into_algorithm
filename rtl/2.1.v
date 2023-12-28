@@ -11,11 +11,7 @@
  */
 
 module insertion_sort(
-`ifdef ASYNC
-	output locale_clock, 
- 	output reg [3:0] nst_d, 
-`endif
-	output reg full, empty, idle, 
+	output full, empty, idle, 
  	output reg [3:0] cst, nst, 
 	input push, pop, clear, sort, 
 	output reg [15:0] dout, 
@@ -58,26 +54,10 @@ reg [7:0] p, j, i;
 reg [15:0] key;
 wire [7:0] pop_p = p - 8'd1;
 
-`ifdef ASYNC
-assign locale_clock = |(nst_d ^ cst);
-always@(*) begin
-	if(!rstn) nst_d = st_idle;
-	else if(!clk) begin
-		if(enable) nst_d = nst;
-	end
-end
-always@(*) begin
-	if(!rstn) cst = st_idle;
-	else if(clk) begin
-		if(enable) cst = nst_d;
-	end
-end
-`else
 always@(negedge rstn or posedge clk) begin
 	if(!rstn) cst <= st_idle;
 	else if(enable) cst <= nst;
 end
-`endif
 
 always@(*) begin
 	case(cst)
@@ -153,26 +133,8 @@ always@(negedge rstn or posedge clk) begin
 	end
 end
 
-always@(negedge rstn or posedge clk) begin
-	if(!rstn) begin
-		idle <= 1'b1;
-		full <= 1'b0;
-		empty <= 1'b1;
-	end
-	else if(enable) begin
-		case(nst)
-			st_idle: begin
-				idle <= 1'b1;
-				full <= p == 8'd255;
-				empty <= p == 8'd0;
-			end
-			default: begin
-				idle <= 1'b0;
-				full <= full;
-				empty <= empty;
-			end
-		endcase
-	end
-end
+assign idle = cst == st_idle;
+assign full = p == 8'd255;
+assign empty = p == 8'd0;
 
 endmodule
