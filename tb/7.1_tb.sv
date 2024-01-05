@@ -1,15 +1,18 @@
+//`define ASYNC
 `include "../rtl/7.1.v"
 `timescale 1ns/100ps
 
 module quicksort_tb;
 
+parameter A_D_MSB = 7;
+parameter A_P_MSB = 3;
+
 reg rstn, enable;
 reg clk;
 initial clk = 1'b0;
 always #4.446 clk = ~clk;
-reg dut_clk;
-reg [15:0] rx_data;
-wire [15:0] tx_data;
+reg [A_D_MSB:0] rx_data;
+wire [A_D_MSB:0] tx_data;
 reg push, pop, clear, sort;
 wire full, empty, idle;
 wire [1:0] cst1, nst1;
@@ -103,9 +106,15 @@ always@(posedge clk) begin
 	endcase
 end
 
-always@(*) dut_clk = clk;
-
-quicksort dut(
+quicksort #(
+	.A_D_MSB(A_D_MSB), 
+	.A_P_MSB(A_P_MSB)
+) dut(
+`ifdef ASYNC
+	.async_se(1'b1), 
+	.test_mode(1'b0), 
+`endif
+	//.test_se(1'b0), 
 	.cst1(cst1), .nst1(nst1), 
 	.cst2(cst2), .nst2(nst2), 
 	.cst3(cst3), .nst3(nst3), 
@@ -115,7 +124,7 @@ quicksort dut(
 	.tx_data(tx_data), 
 	.rx_data(rx_data), 
 	.enable(enable), 
-	.rstn(rstn), .clk(dut_clk)
+	.rstn(rstn), .clk(clk)
 );
 
 task push_and_pop;
@@ -123,8 +132,8 @@ task push_and_pop;
 		$write("\n");
 		repeat(2) @(negedge clk); clear = ~clear;
 		$write("push\n");
-		repeat($urandom_range(100,254)) begin
-			rx_data = $urandom_range(0,16'hffff);
+		repeat($urandom_range(100, ((2**(A_P_MSB+1))-2))) begin
+			rx_data = $urandom_range(0, ((2**(A_D_MSB+1))-1));
 			$write("%d ", rx_data);
 			repeat(10) @(negedge clk);
 			push = ~push;
@@ -149,7 +158,7 @@ endtask
 
 initial begin
 	{rstn, enable, push, pop, clear, sort} = 0;
-	rx_data = $urandom_range(0,16'hffff);
+	rx_data = $urandom_range(0, ((2**(A_D_MSB+1))-1));
 	repeat(2) @(negedge clk); rstn = 1'b1;
 	repeat(2) @(negedge clk); enable = 1'b1;
 	repeat(10) push_and_pop();
@@ -159,7 +168,7 @@ initial begin
 end
 
 initial begin
-  $dumpfile("../work/quicksort_tb.fst");
+	$dumpfile("../work/quicksort_tb.fst");
 	$dumpvars(0, quicksort_tb);
 end
 
