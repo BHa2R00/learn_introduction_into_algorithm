@@ -6,37 +6,54 @@
  * fsm: main
  */
 
-module quicksort(
+module quicksort #(
+	parameter A_D_MSB = 7, 
+	parameter A_P_MSB = 3
+)(
 	output reg [1:0] cst1, nst1, 
 	output reg [3:0] cst2, nst2, 
 	output reg [3:0] cst3, nst3, 
 	output reg [2:0] cst, nst, 
 	output full, empty, idle, 
 	input push, pop, clear, sort, 
-	output reg [15:0] tx_data, 
-	input [15:0] rx_data, 
+	output reg [A_D_MSB:0] tx_data, 
+	input [A_D_MSB:0] rx_data, 
 	input enable, 
+`ifdef ASYNC
+	input rstn, clk, async_se, lck, lck1, lck2, lck3, test_se 
+`else
 	input rstn, clk 
+`endif
 );
 
-reg [15:0] A[0:255];
-reg [7:0] a_top;
-assign empty = a_top == 0;
-assign full = a_top == 255;
-reg [7:0] i, j;
-wire [15:0] A_i = A[i];
-wire [15:0] A_j = A[j];
-reg [15:0] e, x;
-reg [8+8-1:0] pr[0:15];
-reg [3:0] pr_top;
-wire empty_pr = pr_top == 0;
-reg [7:0] p, r, q;
+`ifdef ASYNC
+wire clk1 = test_se ? clk : async_se ? lck1 : clk;
+wire clk2 = test_se ? clk : async_se ? lck2 : clk;
+wire clk3 = test_se ? clk : async_se ? lck3 : clk;
+wire clk0 = test_se ? clk : async_se ? lck  : clk;
+wire clk10 = clk1 | clk0;
+`endif
 
-wire [8+8-1:0] top_pr = pr[pr_top];
-wire [3:0] pr_top_left = pr_top - 1;
-wire [3:0] pr_top_right = pr_top + 1;
-wire [7:0] a_top_left = a_top - 1;
-wire [7:0] a_top_right = a_top + 1;
+parameter A_A_MSB = ((2**A_P_MSB)-1);
+
+reg [A_D_MSB:0] A[0:((2**(A_A_MSB+1))-1)];
+reg [A_A_MSB:0] a_top;
+assign empty = a_top == 0;
+assign full = a_top == {(A_A_MSB+1){1'b1}};
+reg [A_A_MSB:0] i, j;
+wire [A_D_MSB:0] A_i = A[i];
+wire [A_D_MSB:0] A_j = A[j];
+reg [A_D_MSB:0] e, x;
+reg [(A_A_MSB+1)+(A_A_MSB+1)-1:0] pr[0:((2**(A_P_MSB+1))-1)];
+reg [A_P_MSB:0] pr_top;
+wire empty_pr = pr_top == 0;
+reg [A_A_MSB:0] p, r, q;
+
+wire [(A_A_MSB+1)+(A_A_MSB+1)-1:0] top_pr = pr[pr_top];
+wire [A_P_MSB:0] pr_top_left = pr_top - 1;
+wire [A_P_MSB:0] pr_top_right = pr_top + 1;
+wire [A_A_MSB:0] a_top_left = a_top - 1;
+wire [A_A_MSB:0] a_top_right = a_top + 1;
 
 `ifndef GRAY
 	`define GRAY(X) (X^(X>>1))
@@ -52,12 +69,20 @@ localparam [1:0]
 	st1_i		= `GRAY(1),
 	st1_idle	= `GRAY(0);
 reg req1_d;
+`ifdef ASYNC
+always@(negedge rstn or posedge clk1) begin
+`else
 always@(negedge rstn or posedge clk) begin
+`endif
 	if(!rstn) req1_d <= 1'b0;
 	else if(enable) req1_d <= req1;
 end
 wire req1_x = req1_d ^ req1;
+`ifdef ASYNC
+always@(negedge rstn or posedge clk1) begin
+`else
 always@(negedge rstn or posedge clk) begin
+`endif
 	if(!rstn) cst1 <= st1_idle;
 	else if(enable) cst1 <= nst1;
 	else cst1 <= st1_idle;
@@ -71,7 +96,11 @@ always@(*) begin
 		default: nst1 = st1_idle;
 	endcase
 end
+`ifdef ASYNC
+always@(negedge rstn or posedge clk1) begin
+`else
 always@(negedge rstn or posedge clk) begin
+`endif
 	if(!rstn) ack1 <= 1'b0;
 	else if(enable) begin
 		case(nst1)
@@ -94,7 +123,11 @@ localparam [3:0]
 	st2_x		= `GRAY(1),
 	st2_idle	= `GRAY(0);
 reg req2_d, ack1_d;
+`ifdef ASYNC
+always@(negedge rstn or posedge clk2) begin
+`else
 always@(negedge rstn or posedge clk) begin
+`endif
 	if(!rstn) begin
 		req2_d <= 1'b0;
 		ack1_d <= 1'b0;
@@ -106,7 +139,11 @@ always@(negedge rstn or posedge clk) begin
 end
 wire req2_x = req2_d ^ req2;
 wire ack1_x = ack1_d ^ ack1;
+`ifdef ASYNC
+always@(negedge rstn or posedge clk2) begin
+`else
 always@(negedge rstn or posedge clk) begin
+`endif
 	if(!rstn) cst2 <= st2_idle;
 	else if(enable) cst2 <= nst2;
 	else cst2 <= st2_idle;
@@ -129,7 +166,11 @@ always@(*) begin
 		default: nst2 = st2_idle;
 	endcase
 end
+`ifdef ASYNC
+always@(negedge rstn or posedge clk2) begin
+`else
 always@(negedge rstn or posedge clk) begin
+`endif
 	if(!rstn) begin
 		req1 <= 1'b0;
 		ack2 <= 1'b0;
@@ -159,7 +200,11 @@ localparam [3:0]
 	st3_push	= `GRAY(1),
 	st3_idle	= `GRAY(0);
 reg req3_d, ack2_d;
+`ifdef ASYNC
+always@(negedge rstn or posedge clk3) begin
+`else
 always@(negedge rstn or posedge clk) begin
+`endif
 	if(!rstn) begin
 		req3_d <= 1'b0;
 		ack2_d <= 1'b0;
@@ -171,13 +216,17 @@ always@(negedge rstn or posedge clk) begin
 end
 wire req3_x = req3_d ^ req3;
 wire ack2_x = ack2_d ^ ack2;
+`ifdef ASYNC
+always@(negedge rstn or posedge clk3) begin
+`else
 always@(negedge rstn or posedge clk) begin
+`endif
 	if(!rstn) cst3 <= st3_idle;
 	else if(enable) cst3 <= nst3;
 	else cst3 <= st3_idle;
 end
-wire [7:0] q_left = q - 1;
-wire [7:0] q_right = q + 1;
+wire [A_A_MSB:0] q_left = q - 1;
+wire [A_A_MSB:0] q_right = q + 1;
 wire if_p = (q_left > p);
 wire if_r = (q_right < r);
 always@(*) begin
@@ -195,7 +244,11 @@ always@(*) begin
 		default: nst3 = st3_idle;
 	endcase
 end
+`ifdef ASYNC
+always@(negedge rstn or posedge clk3) begin
+`else
 always@(negedge rstn or posedge clk) begin
+`endif
 	if(!rstn) begin
 		req2 <= 1'b0;
 		ack3 <= 1'b0;
@@ -220,7 +273,11 @@ localparam [2:0]
 	st_clear	= `GRAY(1),
 	st_idle		= `GRAY(0);
 reg clear_d, push_d, pop_d, sort_d, ack3_d;
+`ifdef ASYNC
+always@(negedge rstn or posedge clk0) begin
+`else
 always@(negedge rstn or posedge clk) begin
+`endif
 	if(!rstn) begin
 		clear_d <= 1'b0;
 		push_d <= 1'b0;
@@ -241,7 +298,11 @@ wire push_x = push_d ^ push;
 wire pop_x = pop_d ^ pop;
 wire sort_x = sort_d ^ sort;
 wire ack3_x = ack3_d ^ ack3;
+`ifdef ASYNC
+always@(negedge rstn or posedge clk0) begin
+`else
 always@(negedge rstn or posedge clk) begin
+`endif
 	if(!rstn) cst <= st_idle;
 	else if(enable) cst <= nst;
 	else cst <= st_idle;
@@ -257,7 +318,11 @@ always@(*) begin
 		default: nst = st_idle;
 	endcase
 end
+`ifdef ASYNC
+always@(negedge rstn or posedge clk0) begin
+`else
 always@(negedge rstn or posedge clk) begin
+`endif
 	if(!rstn) req3 <= 1'b0;
 	else if(enable) begin
 		case(nst)
@@ -268,12 +333,16 @@ always@(negedge rstn or posedge clk) begin
 end
 assign idle = cst == st_idle;
 
+`ifdef ASYNC
+always@(negedge rstn or posedge clk2) begin
+`else
 always@(negedge rstn or posedge clk) begin
+`endif
 	if(!rstn) begin
-		i <= 8'd0;
-		j <= 8'd0;
-		x <= 16'd0;
-		q <= 8'd0;
+		i <= 0;
+		j <= 0;
+		x <= 0;
+		q <= 0;
 	end
 	else if(enable) begin
 		case(nst2)
@@ -295,21 +364,25 @@ always@(negedge rstn or posedge clk) begin
 	end
 end
 
+`ifdef ASYNC
+always@(negedge rstn or posedge clk3) begin
+`else
 always@(negedge rstn or posedge clk) begin
+`endif
 	if(!rstn) begin
-		pr_top <= 4'd0;
-		p <= 8'd0;
-		r <= 8'd0;
+		pr_top <= 0;
+		p <= 0;
+		r <= 0;
 	end
 	else if(enable) begin
 		case(nst3)
 			st3_push: begin
-				pr[pr_top_right] <= {8'd1, a_top};
+				pr[pr_top_right] <= {{{((A_A_MSB+1)-1){1'b0}},1'b1}, a_top};
 				pr_top <= pr_top_right;
 			end
 			st3_pop: begin
-				p <= top_pr[8+8-1:8];
-				r <= top_pr[8-1:0];
+				p <= top_pr[(A_A_MSB+1)+(A_A_MSB+1)-1:(A_A_MSB+1)];
+				r <= top_pr[A_A_MSB:0];
 				pr_top <= pr_top_left;
 			end
 			st3_pushr: begin
@@ -329,11 +402,15 @@ always@(negedge rstn or posedge clk) begin
 	end
 end
 
+`ifdef ASYNC
+always@(negedge rstn or posedge clk10) begin
+`else
 always@(negedge rstn or posedge clk) begin
+`endif
 	if(!rstn) begin
-		e <= 16'd0;
-		a_top <= 8'd0;
-		tx_data <= 16'd0;
+		e <= 0;
+		a_top <= 0;
+		tx_data <= 0;
 	end
 	else if(enable) begin
 		case(nst1)
@@ -345,7 +422,7 @@ always@(negedge rstn or posedge clk) begin
 			default: e <= e;
 		endcase
 		case(nst)
-			st_clear: a_top <= 8'd0;
+			st_clear: a_top <= 0;
 			st_push: begin
 				A[a_top_right] <= rx_data;
 				a_top <= a_top_right;
