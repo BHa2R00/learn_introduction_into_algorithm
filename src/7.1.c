@@ -25,7 +25,7 @@ unsigned short e;
 
 unsigned short x;
 
-unsigned short pr[8];
+unsigned short pr[16];
 unsigned char pr_top;
 unsigned char p, r;
 void push_pr(unsigned char p, unsigned char r){ 
@@ -41,9 +41,9 @@ void pop_pr(){
 
 unsigned char q;
 void partition(){				/* st2_idle ~req2 ? -> st2_x	 */
-	printf("partition(%d, %d)\n", p, r);
+	//printf("partition(%d, %d)\n", p, r);
 	x = A[r];					/* st2_x -> st2_for	 			 */
-	printf("x = %d\n", x);
+	//printf("x = %d\n", x);
 	i = p;
 	for(j = p; j != r; j++){	/* st2_for -> st2_if | st2_1	 */
 		if(A[j] < x){			/* st2_if -> st2_2 | st2_j		 */
@@ -55,7 +55,7 @@ void partition(){				/* st2_idle ~req2 ? -> st2_x	 */
 	exchange					/* st2_1 -> st2_4 :~req1		 */
 								/* st2_4 ~ack1 ? -> st2_end		 */
 	q = i;						/* st2_end :~ack2				 */
-	printf("q = %d\n", q);
+	//printf("q = %d\n", q);
 }
 
 void quicksort(){				/* st3_idle ~req3 -> st3_push		 */
@@ -74,13 +74,13 @@ int main(){
 	int k;
 	//FILE* fp = fopen("../data/urandom.bin","rb");
 	unsigned short u;
-	for(k = 0; k < 156; k++){
+	for(k = 0; k < 255; k++){
 		//fread(&u, sizeof(unsigned short), 1, fp);
 		u = urandom();
 		push_a(u);
 	}
 	quicksort();
-	for(k = 0; k < 156; k++){ 
+	for(k = 0; k < 255; k++){ 
 		pop_a();
 		printf("%d %d\n", k, a);
 	}
