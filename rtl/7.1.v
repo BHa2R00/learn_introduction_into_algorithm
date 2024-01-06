@@ -59,15 +59,15 @@ wire [A_A_MSB:0] a_top_right = a_top + 1;
 	`define GRAY(X) (X^(X>>1))
 `endif
 
-reg req1, ack1;
-reg req2, ack2;
-reg req3, ack3;
+reg req1;
+reg req2;
+reg req3;
 
 localparam [1:0]
-	st1_end		= `GRAY(3),
 	st1_j		= `GRAY(2),
 	st1_i		= `GRAY(1),
 	st1_idle	= `GRAY(0);
+wire ack1 = cst1 == st1_idle;
 reg req1_d;
 `ifdef ASYNC
 always@(negedge rstn or posedge clk1) begin
@@ -91,27 +91,12 @@ always@(*) begin
 	case(cst1)
 		st1_idle: nst1 = req1_x ? st1_i : cst1;
 		st1_i: nst1 = st1_j;
-		st1_j: nst1 = st1_end;
-		st1_end: nst1 = st1_idle;
+		st1_j: nst1 = st1_idle;
 		default: nst1 = st1_idle;
 	endcase
 end
-`ifdef ASYNC
-always@(negedge rstn or posedge clk1) begin
-`else
-always@(negedge rstn or posedge clk) begin
-`endif
-	if(!rstn) ack1 <= 1'b0;
-	else if(enable) begin
-		case(nst1)
-			st1_end: ack1 <= ~ack1;
-			default: ack1 <= ack1;
-		endcase
-	end
-end
 
 localparam [3:0]
-	st2_end		= `GRAY(10),
 	st2_4		= `GRAY(9),
 	st2_1		= `GRAY(8),
 	st2_j		= `GRAY(7),
@@ -122,23 +107,17 @@ localparam [3:0]
 	st2_for		= `GRAY(2),
 	st2_x		= `GRAY(1),
 	st2_idle	= `GRAY(0);
-reg req2_d, ack1_d;
+wire ack2 = cst2 == st2_idle;
+reg req2_d;
 `ifdef ASYNC
 always@(negedge rstn or posedge clk2) begin
 `else
 always@(negedge rstn or posedge clk) begin
 `endif
-	if(!rstn) begin
-		req2_d <= 1'b0;
-		ack1_d <= 1'b0;
-	end
-	else if(enable) begin
-		req2_d <= req2;
-		ack1_d <= ack1;
-	end
+	if(!rstn) req2_d <= 1'b0;
+	else if(enable) req2_d <= req2;
 end
 wire req2_x = req2_d ^ req2;
-wire ack1_x = ack1_d ^ ack1;
 `ifdef ASYNC
 always@(negedge rstn or posedge clk2) begin
 `else
@@ -157,12 +136,11 @@ always@(*) begin
 		st2_for: nst2 = for_check ? st2_if : st2_1;
 		st2_if: nst2 = if_exch ? st2_2 : st2_j;
 		st2_2: nst2 = st2_3;
-		st2_3: nst2 = ack1_x ? st2_i : cst2;
+		st2_3: nst2 = ack1 ? st2_i : cst2;
 		st2_i: nst2 = st2_j;
 		st2_j: nst2 = st2_for;
 		st2_1: nst2 = st2_4;
-		st2_4: nst2 = ack1_x ? st2_end : cst2;
-		st2_end: nst2 = st2_idle;
+		st2_4: nst2 = ack1 ? st2_idle : cst2;
 		default: nst2 = st2_idle;
 	endcase
 end
@@ -171,25 +149,17 @@ always@(negedge rstn or posedge clk2) begin
 `else
 always@(negedge rstn or posedge clk) begin
 `endif
-	if(!rstn) begin
-		req1 <= 1'b0;
-		ack2 <= 1'b0;
-	end
+	if(!rstn) req1 <= 1'b0;
 	else if(enable) begin
 		case(nst2)
 			st2_2: req1 <= ~req1;
 			st2_1: req1 <= ~req1;
-			st2_end: ack2 <= ~ack2;
-			default: begin
-				req1 <= req1;
-				ack2 <= ack2;
-			end
+			default: req1 <= req1;
 		endcase
 	end
 end
 
 localparam [3:0]
-	st3_end		= `GRAY(9),
 	st3_pushp	= `GRAY(8),
 	st3_ifr		= `GRAY(7),
 	st3_pushr	= `GRAY(6),
@@ -199,23 +169,17 @@ localparam [3:0]
 	st3_while	= `GRAY(2),
 	st3_push	= `GRAY(1),
 	st3_idle	= `GRAY(0);
-reg req3_d, ack2_d;
+wire ack3 = cst3 == st3_idle;
+reg req3_d;
 `ifdef ASYNC
 always@(negedge rstn or posedge clk3) begin
 `else
 always@(negedge rstn or posedge clk) begin
 `endif
-	if(!rstn) begin
-		req3_d <= 1'b0;
-		ack2_d <= 1'b0;
-	end
-	else if(enable) begin
-		req3_d <= req3;
-		ack2_d <= ack2;
-	end
+	if(!rstn) req3_d <= 1'b0;
+	else if(enable) req3_d <= req3;
 end
 wire req3_x = req3_d ^ req3;
-wire ack2_x = ack2_d ^ ack2;
 `ifdef ASYNC
 always@(negedge rstn or posedge clk3) begin
 `else
@@ -233,14 +197,13 @@ always@(*) begin
 	case(cst3)
 		st3_idle: nst3 = req3_x ? st3_push : cst3;
 		st3_push: nst3 = st3_while;
-		st3_while: nst3 = empty_pr ? st3_end : st3_pop;
+		st3_while: nst3 = empty_pr ? st3_idle : st3_pop;
 		st3_pop: nst3 = st3_1;
-		st3_1: nst3 = ack2_x ? st3_ifp : cst3;
+		st3_1: nst3 = ack2 ? st3_ifp : cst3;
 		st3_ifp: nst3 = if_p ? st3_pushr : st3_ifr;
 		st3_pushr: nst3 = st3_ifr;
 		st3_ifr: nst3 = if_r ? st3_pushp : st3_while;
 		st3_pushp: nst3 = st3_while;
-		st3_end: nst3 = st3_idle;
 		default: nst3 = st3_idle;
 	endcase
 end
@@ -249,18 +212,11 @@ always@(negedge rstn or posedge clk3) begin
 `else
 always@(negedge rstn or posedge clk) begin
 `endif
-	if(!rstn) begin
-		req2 <= 1'b0;
-		ack3 <= 1'b0;
-	end
+	if(!rstn) req2 <= 1'b0;
 	else if(enable) begin
 		case(nst3)
 			st3_pop: req2 <= ~req2;
-			st3_end: ack3 <= ~ack3;
-			default: begin
-				req2 <= req2;
-				ack3 <= ack3;
-			end
+			default: req2 <= req2;
 		endcase
 	end
 end
@@ -272,7 +228,7 @@ localparam [2:0]
 	st_push		= `GRAY(2),
 	st_clear	= `GRAY(1),
 	st_idle		= `GRAY(0);
-reg clear_d, push_d, pop_d, sort_d, ack3_d;
+reg clear_d, push_d, pop_d, sort_d;
 `ifdef ASYNC
 always@(negedge rstn or posedge clk0) begin
 `else
@@ -283,21 +239,18 @@ always@(negedge rstn or posedge clk) begin
 		push_d <= 1'b0;
 		pop_d <= 1'b0;
 		sort_d <= 1'b0;
-		ack3_d <= 1'b0;
 	end
 	else if(enable) begin
 		clear_d <= clear;
 		push_d <= push;
 		pop_d <= pop;
 		sort_d <= sort;
-		ack3_d <= ack3;
 	end
 end
 wire clear_x = clear_d ^ clear;
 wire push_x = push_d ^ push;
 wire pop_x = pop_d ^ pop;
 wire sort_x = sort_d ^ sort;
-wire ack3_x = ack3_d ^ ack3;
 `ifdef ASYNC
 always@(negedge rstn or posedge clk0) begin
 `else
@@ -314,7 +267,7 @@ always@(*) begin
 		st_push: nst = st_idle;
 		st_pop: nst = st_idle;
 		st_sort: nst = st_1;
-		st_1: nst = ack3_x ? st_idle : cst;
+		st_1: nst = ack3 ? st_idle : cst;
 		default: nst = st_idle;
 	endcase
 end
@@ -353,7 +306,7 @@ always@(negedge rstn or posedge clk) begin
 			end
 			st2_j: j <= j + 1;
 			st2_i: i <= i + 1;
-			st2_end: q <= i;
+			st2_idle: q <= i;
 			default: begin
 				i <= i;
 				j <= j;
