@@ -21,7 +21,7 @@ unsigned short e;
 #define exchange 			/* st1_idle ~req1 ? -> st1_i	 */\
 	/*printf("exchange(%d, %d)\n", i, j);*/ \
 	e = A[i]; A[i] = A[j];	/* st1_i -> st1_j 				 */\
-	A[j] = e; 				/* st1_j -> st1_end	:~ack1		 */
+	A[j] = e; 				/* st1_j -> st1_idle :~ack1		 */
 
 unsigned short x;
 
@@ -53,14 +53,14 @@ void partition(){				/* st2_idle ~req2 ? -> st2_x	 */
 		}
 	}							/* st2_j -> st2_for 			 */
 	exchange					/* st2_1 -> st2_4 :~req1		 */
-								/* st2_4 ~ack1 ? -> st2_end		 */
-	q = i;						/* st2_end :~ack2				 */
+								/* st2_4 ~ack1 ? -> st2_idle	 */
+	q = i;						/* st2_idle :~ack2				 */
 	//printf("q = %d\n", q);
 }
 
 void quicksort(){				/* st3_idle ~req3 -> st3_push		 */
 	push_pr(1, a_top);			/* st3_push -> st3_while			 */
-	while(!emptyp_pr){			/* st3_while -> st3_pop | st3_end	 */
+	while(!emptyp_pr){			/* st3_while -> st3_pop | st3_idle	 */
 		pop_pr();				/* st3_pop -> st3_1 :~req2 			 */
 		partition();			/* st3_1 ~ack2 ? -> st3_ifp			 */
 		if(q - 1 > p) 			/* st3_ifp -> st3_pushr | st3_ifr	 */
@@ -68,14 +68,12 @@ void quicksort(){				/* st3_idle ~req3 -> st3_push		 */
 		if(q + 1 < r) 			/* st3_ifr -> st3_pushp | st3_while	 */
 			push_pr(q + 1, r);	/* st3_pushp -> st3_while			 */
 	}
-}								/* st3_end :~ack3					 */
+}								/* st3_idle :~ack3					 */
 
 int main(){
 	int k;
-	//FILE* fp = fopen("../data/urandom.bin","rb");
 	unsigned short u;
 	for(k = 0; k < 255; k++){
-		//fread(&u, sizeof(unsigned short), 1, fp);
 		u = urandom();
 		push_a(u);
 	}
