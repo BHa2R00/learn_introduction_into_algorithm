@@ -25,13 +25,11 @@ wire [2:0] cst, nst;
 `endif
 
 localparam [1:0]
-	st1_end		= `GRAY(3),
 	st1_j		= `GRAY(2),
 	st1_i		= `GRAY(1),
 	st1_idle	= `GRAY(0);
 
 localparam [3:0]
-	st2_end		= `GRAY(10),
 	st2_4		= `GRAY(9),
 	st2_1		= `GRAY(8),
 	st2_j		= `GRAY(7),
@@ -44,7 +42,6 @@ localparam [3:0]
 	st2_idle	= `GRAY(0);
 
 localparam [3:0]
-	st3_end		= `GRAY(9),
 	st3_pushp	= `GRAY(8),
 	st3_ifr		= `GRAY(7),
 	st3_pushr	= `GRAY(6),
@@ -69,7 +66,6 @@ always@(posedge clk) begin
 		st1_idle: test_phase1 = "nst1_idle";
 		st1_i: test_phase1 = "nst1_i";
 		st1_j: test_phase1 = "nst1_j";
-		st1_end: test_phase1 = "nst1_end";
 	endcase
 	case(nst2)
 		st2_idle: test_phase2 = "nst2_idle";
@@ -82,7 +78,6 @@ always@(posedge clk) begin
 		st2_j: test_phase2 = "nst2_j";
 		st2_1: test_phase2 = "nst2_1";
 		st2_4: test_phase2 = "nst2_4";
-		st2_end: test_phase2 = "nst2_end";
 	endcase
 	case(nst3)
 		st3_idle: test_phase3 = "nst3_idle";
@@ -94,7 +89,6 @@ always@(posedge clk) begin
 		st3_pushr: test_phase3 = "nst3_pushr";
 		st3_ifr: test_phase3 = "nst3_ifr";
 		st3_pushp: test_phase3 = "nst3_pushp";
-		st3_end: test_phase3 = "nst3_end";
 	endcase
 	case(nst)
 		st_idle: test_phase = "nst_idle";
